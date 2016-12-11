@@ -1,13 +1,19 @@
 'use strict';
 
-module.exports.index = (event, context, callback) => {
+module.exports.get = (event, context, callback) => {
   const AWS = require('aws-sdk');
   const dynamo = new AWS.DynamoDB.DocumentClient();
-  console.log(event.pathParameters.node_serial)
+
+  const topic = decodeURIComponent(event.pathParameters.encoded_topic)
+  
+  console.log(topic)
   var params = {
     TableName: 'mqtt_log',
-    KeyConditionExpression: "node_serial = :node_serial",
-    ExpressionAttributeValues : {':node_serial' : event.pathParameters.node_serial}
+    IndexName: 'topicGSI',
+    KeyConditionExpression: "topic = :topic",
+    ExpressionAttributeValues : {
+      ':topic': topic
+    }
   };
 
   dynamo.query(params, function(err, data) {
