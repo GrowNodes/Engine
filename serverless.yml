@@ -62,7 +62,20 @@ functions:
           method: get
           # authorizer: requireAuth
 
-
+  fcm_attach:
+    handler: fcm.attach
+    events:
+      - http:
+          path: fcm/attach
+          method: post
+          # authorizer: requireAuth
+  fcm_detach:
+    handler: fcm.detach
+    events:
+      - http:
+          path: fcm/detach
+          method: post
+          # authorizer: requireAuth
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -129,11 +142,21 @@ resources:
             ProvisionedThroughput: 
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-
-
+    UserFcmTokensTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: user_fcm_tokens
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        AttributeDefinitions:
+          - AttributeName: uid
+            AttributeType: S       
+        KeySchema:
+          - AttributeName: uid
+            KeyType: HASH
     DynamoDBIamPolicy:
       Type: AWS::IAM::Policy
-      DependsOn: MqttLogTable
       Properties:
         PolicyName: lambda-dynamodb
         PolicyDocument:
@@ -143,6 +166,6 @@ resources:
               Action:
                 - dynamodb:GetItem
                 # - dynamodb:PutItem
-              Resource: arn:aws:dynamodb:*:*:table/mqtt_log
+              Resource: arn:aws:dynamodb:*:*:table/*
         Roles:
           - Ref: IamRoleLambdaExecution
